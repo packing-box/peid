@@ -26,13 +26,18 @@ def main():
         "peid program.exe -b",
         "peid program.exe --db custom_sigs_db.txt",
     ])
-    parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter)
+    parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
     parser.add_argument("path", type=valid_file, help="path to portable executable")
-    parser.add_argument("-b", "--benchmark", action="store_true",
-                        help="enable benchmarking, output in seconds (default: False)")
-    parser.add_argument("-d", "--db", default=DB, type=valid_file,
-                        help="path to signatures custom database (default: None)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="display debug information (default: False)")
+    opt = parser.add_argument_group("optional arguments")
+    opt.add_argument("-d", "--db", default=DB, type=valid_file,
+                     help="path to the custom database of signatures (default: None ; use the embedded DB)")
+    opt.add_argument("-e", "--ep-only", action="store_false",
+                     help="consider only entry point signatures (default: True)")
+    extra = parser.add_argument_group("extra arguments")
+    extra.add_argument("-b", "--benchmark", action="store_true",
+                       help="enable benchmarking, output in seconds (default: False)")
+    extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    extra.add_argument("-v", "--verbose", action="store_true", help="display debug information (default: False)")
     args = parser.parse_args()
     logging.basicConfig()
     args.logger = logging.getLogger("peid")
@@ -42,19 +47,14 @@ def main():
     if args.benchmark:
         t1 = perf_counter()
     try:
-        r = identify_packer(args.path, args.db, args.logger)
-        if not r:
-            raise Exception("no result")
+        r = identify_packer(args.path, args.db, args.ep_only, args.logger)
         dt = str(perf_counter() - t1) if args.benchmark else ""
-        if not isinstance(r, (tuple, list)):
-            r = [r]
-        r = list(map(str, r))
         if dt != "":
             r.append(dt)
-        print(" ".join(r))
+        if len(r) > 0:
+            print("\n".join(r))
     except Exception as e:
-        if str(e) != "no result":
-            args.logger.exception(e)
+        args.logger.exception(e)
         code = 1
     return code
 
