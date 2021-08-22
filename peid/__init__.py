@@ -65,14 +65,17 @@ class SignatureDatabase(Base):
                         ["", "section_start_only = %s\n" % str(sec_start_only).lower()][sec_start_only]))
     
     def merge(self, *dbs):
-        self.comments = ["Merged with Python peid package on " + date.today().strftime("%B %d, %Y"),
-                         " - " + os.path.basename(self.path)]
+        self.comments = ["Merged with Python peid package on " + date.today().strftime("%B %d, %Y")]
+        if len(self) > 0:
+            self.comments.append(" - " + os.path.basename(self.path))
         for db in dbs:
-            db = self.__get(db)
-            self.comments.append(" - " + os.path.basename(db.path))
+            db, added = self.__get(db), False
             for sig, fields in db.signatures.items():
                 if sig not in self.signatures:
                     self.signatures[sig] = fields
+                    added = True
+            if added:
+                self.comments.append(" - " + os.path.basename(db.path))
         self.comments.append("%d signatures in list" % len(self))
 
 
