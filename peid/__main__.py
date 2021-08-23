@@ -28,7 +28,7 @@ def main():
         "peid program.exe --db custom_sigs_db.txt",
     ])
     parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
-    parser.add_argument("path", type=valid_file, help="path to portable executable")
+    parser.add_argument("path", type=valid_file, nargs="+", help="path to portable executable")
     opt = parser.add_argument_group("optional arguments")
     opt.add_argument("-a", "--author", action="store_true", help="include author in the result")
     opt.add_argument("-d", "--db", default=DB, type=valid_file,
@@ -49,8 +49,8 @@ def main():
     # execute the tool
     if args.benchmark:
         t1 = perf_counter()
-    try:
-        r = identify_packer(args.path, args.db, args.ep_only, args.logger)
+    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, logger=args.logger)
+    for pe, r in results:
         if not args.author:
             r = list(map(lambda x: re.sub(r"\s*\-(\-?\>|\s*by)\s*(.*)$", "", x), r))
         if not args.version:
@@ -58,13 +58,17 @@ def main():
                   r"(\s*\(?(\s*([Aa]lpha|[Bb]eta|final|lite|LITE|osCE|Demo|DEMO)){1,2}(\s*[a-z]?\d)?\)?)?"
             VER = re.compile(r"^(.*?)\s+" + VER + r"(\s*[-_\/\~]" + VER + r"){0,3}(\s+\(unregistered\))?")
             r = list(map(lambda x: re.sub(r"\s+\d+(\s+SE)?$", "", VER.sub(r"\1", x)), r))
-        dt = str(perf_counter() - t1) if args.benchmark else ""
-        if dt != "":
-            r.append(dt)
-        if len(r) > 0:
-            print("\n".join(r))
-    except Exception as e:
-        args.logger.exception(e)
-        code = 1
-    return code
+        if len(results) == 1:
+            dt = str(perf_counter() - t1) if args.benchmark else ""
+            if dt != "":
+                r.append(dt)
+            if len(r) > 0:
+                print("\n".join(r))
+            return 0
+        else:
+            print("%s %s" % (pe, ",".join(r)))
+    dt = str(perf_counter() - t1) if args.benchmark else ""
+    if dt != "":
+        print(dt)
+    return 0
 

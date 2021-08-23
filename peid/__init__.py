@@ -79,22 +79,20 @@ class SignatureDatabase(Base):
         self.comments.append("%d signatures in list" % len(self))
 
 
-def identify_packer(pe, db=None, ep_only=True, logger=None):
+def identify_packer(*paths, db=None, ep_only=True, logger=None):
     """ Identify the packer used in a given executable using the given signatures database.
     
-    :param pe:      either the path to the executable file or a PE instance
+    :param path:    path to the executable file(s)
     :param db:      path to the database
     :param ep_only: consider only entry point signatures
     :return:        return the matching packers
     """
-    if not isinstance(pe, PE):
-        path = pe
-        pe = PE(pe)
-        pe.path = path
-    db = open_sigs(db, logger)
-    if logger:
-        logger.debug("Parsing PE file '%s'..." % getattr(pe, "path", "unknown path"))
-    return db.match(pe, ep_only=ep_only) or []
+    db, results = open_sigs(db, logger), []
+    for pe in paths:
+        if logger:
+            logger.debug("Parsing PE file '%s'..." % getattr(pe, "path", "unknown path"))
+        results.append((pe, db.match(PE(pe), ep_only=ep_only) or []))
+    return results
 
 
 def open_sigs(path, logger=None):
