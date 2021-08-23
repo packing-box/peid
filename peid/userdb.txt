@@ -11102,7 +11102,7 @@ signature = E8 ?? ?? ?? ?? 55 53 51 52 48 01 FE 56 41 80 F8 0E 0F 85 6C 0A 00 00
 ep_only = true
 
 [UPX v3.95 -> morfal]
-signature = 53 56 57 55 48 8D 35 ?? ?? ?? FF 48 8D BE FB ?? ?? FF 57 31 DB 31 C9 48 83 CD FF E8 50 00 00 00 01 DB 74 02 F3 C3 8B 1E 48 83 EE FC 11 DB 8A 16 F3 C3
+signature = 53 56 57 55 48 8D 35 ?? ?? ?? FF 48 8D BE ?? ?? ?? FF 57 31 DB 31 C9 48 83 CD FF E8 50 00 00 00 01 DB 74 02 F3 C3 8B 1E 48 83 EE FC 11 DB 8A 16 F3 C3
 ep_only = true
 
 [UPX$HiT 0.0.1 -> DJ Siba]
