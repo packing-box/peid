@@ -3,7 +3,7 @@
 ;  - BobSoft_big
 ;  - PEiDTab
 ; Sanitized from unrelated formats
-; 4154 signatures in list
+; 4155 signatures in list
 
 [.BJFnt v1.1b]
 signature = EB 01 EA 9C EB 01 EA 53 EB 01 EA 51 EB 01 EA 52 EB 01 EA 56
@@ -11099,6 +11099,10 @@ ep_only = true
 
 [UPX v3.9x (LZMA) -> RetDec]
 signature = E8 ?? ?? ?? ?? 55 53 51 52 48 01 FE 56 41 80 F8 0E 0F 85 6C 0A 00 00 55 48 89 E5 44 8B 09 49 89 D0 48 89 F2 48 8D 77 02 56 8A 07 FF CA 88 C1
+ep_only = true
+
+[UPX v3.95 -> morfal]
+signature = 53 56 57 55 48 8D 35 ?? ?? ?? FF 48 8D BE FB ?? ?? FF 57 31 DB 31 C9 48 83 CD FF E8 50 00 00 00 01 DB 74 02 F3 C3 8B 1E 48 83 EE FC 11 DB 8A 16 F3 C3
 ep_only = true
 
 [UPX$HiT 0.0.1 -> DJ Siba]
