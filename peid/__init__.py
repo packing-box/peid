@@ -5,7 +5,7 @@ from pefile import PE
 from peutils import SignatureDatabase as Base
 
 
-__all__ = ["identify_packer", "open_sigs", "DB", "SignatureDatabase"]
+__all__ = ["identify_packer", "open_signature_db", "DB", "SignatureDatabase"]
 
 
 __log = lambda l, m, lvl="debug": getattr(l, lvl)(m) if l else None
@@ -50,11 +50,22 @@ class SignatureDatabase(Base):
         return db
     
     def compare(self, db, encoding=None):
+        """ Compare this database with the given one.
+        
+        :param db:       path to database to be compared
+        :param encoding: encoding for dumping the database
+        :return:         generator producing signatures not present in this database but well in the compared one
+        """
         for sig, fields in self.__get(db, encoding).signatures.items():
             if sig not in self.signatures:
                 yield fields[0]
     
     def dump(self, filename="userdb.txt", encoding=None):
+        """ Dump self.signatures to the given path.
+        
+        :param filename: path to database dump
+        :param encoding: encoding for dumping the database
+        """
         with open(filename, 'wt', encoding=encoding or self.encoding) as f:
             for l in self.comments:
                 f.write("; %s\n" % l)
@@ -65,6 +76,11 @@ class SignatureDatabase(Base):
                         ["", "section_start_only = %s\n" % str(sec_start_only).lower()][sec_start_only]))
     
     def merge(self, *dbs):
+        """ Merge multiple signatures databases.
+        
+        :param dbs: paths to databases
+        :post:      signatures from given databases added to self.signatures and self.comments updated
+        """
         self.comments = ["Merged with Python peid package on " + date.today().strftime("%B %d, %Y")]
         if len(self) > 0:
             self.comments.append(" - " + os.path.basename(self.path))
@@ -77,6 +93,50 @@ class SignatureDatabase(Base):
             if added:
                 self.comments.append(" - " + os.path.basename(db.path))
         self.comments.append("%d signatures in list" % len(self))
+    
+    def set(self, packer, signature, ep_only=True, author=None, version=None):
+        """ Add/update a signature based on the given data.
+        
+        :param signature: signature's bytes
+        :param ep_only:   whether the signature is to be used from the entry point
+        :param author:    author to be mentioned for the signature
+        :param version:   version of the packer matched by the signature
+        :post:            new signature added to self.signatures
+        """
+        if version:
+            packer += " %s" % version
+        if author:
+            packer += " -> %s" % author
+        self.signatures[signature] = (packer, signature, "", ep_only, False)
+        for i, c in enumerate(self.comments):
+            if c.endswith("signatures in list"):
+                break
+        self.comments[i] = "%d signatures in list" % len(self)
+
+
+def find_ep_only_signature(*files, length=64, common_bytes_threshold=.5):
+    """ Find a signature among the given files.
+    
+    :param files:                  list of files to be compared in order to deduce a signature
+    :param length:                 signature length
+    :param common_bytes_threshold: minimal portion of bytes common to each file to be considered a valid signature
+    :return:                       signature string (PEiD format)
+    """
+    sig, data = [], []
+    for f in files:
+        pe = PE(f)
+        ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        data.append(pe.get_memory_mapped_image()[ep:ep+length])
+    h = lambda b: hex(b)[2:].zfill(2).upper()
+    for i in range(length):
+        for d in data:
+            if len(sig) <= i:
+                sig.append(h(d[i]))
+            elif h(d[i]) != sig[-1]:
+                sig[-1] = "??"
+    if sig.count("??") / len(sig) > 1 - common_bytes_threshold:
+        raise ValueError("Could not find a suitable signature")
+    return " ".join(sig)
 
 
 def identify_packer(*paths, db=None, ep_only=True, logger=None):
@@ -87,7 +147,7 @@ def identify_packer(*paths, db=None, ep_only=True, logger=None):
     :param ep_only: consider only entry point signatures
     :return:        return the matching packers
     """
-    db, results = open_sigs(db, logger), []
+    db, results = open_signature_db(db, logger), []
     for pe in paths:
         if logger:
             logger.debug("Parsing PE file '%s'..." % getattr(pe, "path", "unknown path"))
@@ -95,7 +155,7 @@ def identify_packer(*paths, db=None, ep_only=True, logger=None):
     return results
 
 
-def open_sigs(path, logger=None):
+def open_signature_db(path, logger=None):
     """ Open a signatures database.
     
     :param path: path to the database
