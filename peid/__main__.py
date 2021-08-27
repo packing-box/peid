@@ -93,23 +93,24 @@ def peidsig():
     parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
     parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
     sig = parser.add_argument_group("signature arguments")
-    sig.add_argument("-d", "--db", help="target signatures database")
     sig.add_argument("-l", "--length", type=int, default=64, help="length of bytes to be considered for the signature"
                      " (default: 64)")
     sig.add_argument("-t", "--bytes-threshold", type=valid_percentage, default=.5, help="proportion of common bytes"
                      " to be considered from the samples ; 0 <= x <= 1 (default: .5)")
     opt = parser.add_argument_group("optional arguments")
     opt.add_argument("-a", "--author", help="author of the signature")
+    opt.add_argument("-d", "--db", help="target signatures database")
     opt.add_argument("-p", "--packer", help="packer name for the new signature")
     opt.add_argument("-v", "--version", help="packer version to be mentioned in the signature\n\nNB: if no parameter or"
-                     " at least packer's name is given, only the signature itself is output ; otherwise, a PEiD-"
-                     "formatted signature is displayed")
+                     " at least packer's name is given, only the signature itself is output ;\n     otherwise, a PEiD-"
+                     "formatted signature is displayed\n    in addition, if --db is defined, the signature is saved")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
     args = parser.parse_args()
     try:
         s = find_ep_only_signature(*args.path, length=args.length, common_bytes_threshold=args.bytes_threshold)
     except ValueError:
+        print("[ERROR] Could not find a suitable signature")
         return 1
     if args.packer:
         n = args.packer
