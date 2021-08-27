@@ -7,13 +7,20 @@ from os.path import exists
 from time import perf_counter
 
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
-from .__init__ import identify_packer, DB
+from .__init__ import *
 
 
 def valid_file(path):
     if not exists(path):
         raise ValueError("input file does not exist")
     return path
+
+
+def valid_percentage(percentage):
+    p = float(percentage)
+    if not 0. <= p <= 1.:
+        raise ValueError("Not a percentage")
+    return p
 
 
 def main():
@@ -70,5 +77,51 @@ def main():
     dt = str(perf_counter() - t1) if args.benchmark else ""
     if dt != "":
         print(dt)
+    return 0
+
+
+def peidsig():
+    """ Additional tool for creating signatures """
+    descr = "PEiD-Sig 1.0\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
+            "\nThis tool aims to create signatures for the Packed Executable iDentifier (PEiD).\n\n"
+    descr = descr.format(__author__, __email__, __copyright__, __license__, __source__)
+    examples = "usage examples:\n- " + "\n- ".join([
+        "peid *.exe",
+        "peid *.exe --db path/to/userdb.txt --packer PE-Packer",
+        "peid prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta",
+    ])
+    parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
+    parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
+    sig = parser.add_argument_group("signature arguments")
+    sig.add_argument("-d", "--db", help="target signatures database")
+    sig.add_argument("-l", "--length", type=int, default=64, help="length of bytes to be considered for the signature"
+                     " (default: 64)")
+    sig.add_argument("-t", "--bytes-threshold", type=valid_percentage, default=.5, help="proportion of common bytes"
+                     " to be considered from the samples ; 0 <= x <= 1 (default: .5)")
+    opt = parser.add_argument_group("optional arguments")
+    opt.add_argument("-a", "--author", help="author of the signature")
+    opt.add_argument("-p", "--packer", help="packer name for the new signature")
+    opt.add_argument("-v", "--version", help="packer version to be mentioned in the signature\n\nNB: if no parameter or"
+                     " at least packer's name is given, only the signature itself is output ; otherwise, a PEiD-"
+                     "formatted signature is displayed")
+    extra = parser.add_argument_group("extra arguments")
+    extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    args = parser.parse_args()
+    try:
+        s = find_ep_only_signature(*args.path, length=args.length, common_bytes_threshold=args.bytes_threshold)
+    except ValueError:
+        return 1
+    if args.packer:
+        n = args.packer
+        if args.version:
+            n += " " + args.version
+        if args.author:
+            n += " -> " + args.author
+        if args.db:
+            db = SignatureDatabase(args.db)
+            db.set(args.packer, s, True, args.author, args.version)
+            db.dump()
+        s = "[%s]\nsignature = %s\nep_only = true" % (n, s)
+    print(s)
     return 0
 

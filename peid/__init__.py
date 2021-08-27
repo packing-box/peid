@@ -5,7 +5,7 @@ from pefile import PE
 from peutils import SignatureDatabase as Base
 
 
-__all__ = ["identify_packer", "open_signature_db", "DB", "SignatureDatabase"]
+__all__ = ["find_ep_only_signature", "identify_packer", "open_signature_db", "DB", "SignatureDatabase"]
 
 
 __log = lambda l, m, lvl="debug": getattr(l, lvl)(m) if l else None
@@ -15,6 +15,9 @@ DB = os.path.join(os.path.dirname(__file__), "userdb.txt")
 class SignatureDatabase(Base):
     def __init__(self, filename, encoding="latin-1"):
         filename = os.path.abspath(filename)
+        if not os.path.exists(filename):
+            with open(filename, 'wt') as f:
+                f.write("; 0 signature in list")
         with open(filename, encoding=encoding) as f:
             super(SignatureDatabase, self).__init__(data=f.read())
         self.path = filename
@@ -60,13 +63,13 @@ class SignatureDatabase(Base):
             if sig not in self.signatures:
                 yield fields[0]
     
-    def dump(self, filename="userdb.txt", encoding=None):
+    def dump(self, filename=None, encoding=None):
         """ Dump self.signatures to the given path.
         
         :param filename: path to database dump
         :param encoding: encoding for dumping the database
         """
-        with open(filename, 'wt', encoding=encoding or self.encoding) as f:
+        with open(filename or self.path, 'wt', encoding=encoding or self.encoding) as f:
             for l in self.comments:
                 f.write("; %s\n" % l)
             f.write("\n")
@@ -111,7 +114,11 @@ class SignatureDatabase(Base):
         for i, c in enumerate(self.comments):
             if c.endswith("signatures in list"):
                 break
-        self.comments[i] = "%d signatures in list" % len(self)
+        c = "%d signatures in list" % len(self)
+        try:
+            self.comments[i] = c
+        except IndexError:
+            self.comments.append(c)
 
 
 def find_ep_only_signature(*files, length=64, common_bytes_threshold=.5):
