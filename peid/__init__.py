@@ -155,10 +155,15 @@ def identify_packer(*paths, db=None, ep_only=True, logger=None):
     :return:        return the matching packers
     """
     db, results = open_signature_db(db, logger), []
-    for pe in paths:
+    for path in paths:
+        if isinstance(path, PE):
+            pe = path
+            path = getattr(pe, "path", "unknown")
+        else:
+            pe = PE(path)
         if logger:
-            logger.debug("Parsing PE file '%s'..." % getattr(pe, "path", "unknown path"))
-        results.append((pe, db.match(PE(pe), ep_only=ep_only) or []))
+            logger.debug("Parsing PE file '%s'..." % path)
+        results.append((path, db.match(pe, ep_only=ep_only) or []))
     return results
 
 
