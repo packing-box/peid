@@ -1,3 +1,4 @@
+<p align="center"><img src="https://github.com/dhondta/peid/raw/main/logo.png"></p>
 <h1 align="center">Packed Executable iDentifier <a href="https://twitter.com/intent/tweet?text=Packed%20Executable%20iDentifier%20-%20Python%20implementation%20of%20PEiD,%20the%20well-known%20packer%20identification%20tool%20for%20PE%20files%20based%20on%20signatures.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpeid%0D%0A&hashtags=python,pe,peid,packer,packingdetection"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
 <h3 align="center">Detect packers on PE files using signatures.</h3>
 
