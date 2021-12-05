@@ -131,6 +131,8 @@ def find_ep_only_signature(*files, length=64, common_bytes_threshold=.5):
     """
     sig, data = [], []
     for f in files:
+        if not os.path.isfile(f):
+            continue
         pe = PE(f)
         ep = pe.OPTIONAL_HEADER.AddressOfEntryPoint
         data.append(pe.get_memory_mapped_image()[ep:ep+length])
