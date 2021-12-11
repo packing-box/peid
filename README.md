@@ -37,6 +37,16 @@ $ peidsig *.exe --db path/to/userdb.txt --packer UPX --version v3.97 --author js
 ```
 
 
+## :star: Related Projects
+
+You may also like these:
+
+- [Awesome Executable Packing](https://github.com/dhondta/awesome-executable-packing): A curated list of awesome resources related to executable packing.
+- [Bintropy](https://github.com/dhondta/bintropy): Analysis tool for estimating the likelihood that a binary contains compressed or encrypted bytes.
+- [Docker Packing Box](https://github.com/dhondta/docker-packing-box): Docker image gathering packers and tools for making datasets of packed executables.
+- [PyPackerDetect](https://github.com/dhondta/PyPackerDetect): Packing detection tool for PE files.
+
+
 ## :clap:  Supporters
 
 [![Stargazers repo roster for @dhondta/peid](https://reporoster.com/stars/dark/dhondta/peid)](https://github.com/dhondta/peid/stargazers)
