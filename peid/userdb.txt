@@ -3,6 +3,7 @@
 ;  - BobSoft_big
 ;  - PEiDTab
 ;  - ExeinfoPe
+;  - PEV
 ; 5588 signatures in list
 
 [ A win32 exe packer - http://github.com/Eronana/packer ]

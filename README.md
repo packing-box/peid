@@ -10,7 +10,13 @@
 [![DOI](https://zenodo.org/badge/383567798.svg)](https://zenodo.org/badge/latestdoi/383567798)
 [![License](https://img.shields.io/pypi/l/peid.svg)](https://pypi.python.org/pypi/peid/)
 
-This tool is an implementation in Python of the Packed Executable iDentifier ([PEiD](https://www.aldeid.com/wiki/PEiD)) in the scope of packing detection for Windows PE files based on signatures. It uses the [`userdb.txt` database](https://github.com/wolfram77web/app-peid/blob/master/userdb.txt) from [this repository](https://github.com/wolfram77web/app-peid).
+This tool is an implementation in Python of the Packed Executable iDentifier ([PEiD](https://www.aldeid.com/wiki/PEiD)) in the scope of packing detection for Windows PE files based on signatures. It uses a combination of more than 5.500 signatures merged from the following sources:
+
+- [wolfram77web/app-peid](https://github.com/wolfram77web/app-peid/)
+- [merces/pev](https://github.com/merces/pev/)
+- [ExeinfoASL/ASL](https://github.com/ExeinfoASL/ASL)
+- [Ice3man543/MalScan](https://github.com/Ice3man543/MalScan)
+- [PEiD Tab](https://www.top4download.com/peid-tab/screenshot-gaqrbxek.html)
 
 It relies on [`pefile`](https://github.com/erocarrera/pefile) for abstracting PE files and reading signatures databases.
 
@@ -43,6 +49,8 @@ You may also like these:
 
 - [Awesome Executable Packing](https://github.com/dhondta/awesome-executable-packing): A curated list of awesome resources related to executable packing.
 - [Bintropy](https://github.com/dhondta/bintropy): Analysis tool for estimating the likelihood that a binary contains compressed or encrypted bytes.
+- [Dataset of packed ELF files](https://github.com/dhondta/dataset-packed-elf): Dataset of ELF samples packed with many different packers.
+- [Dataset of packed PE files](https://github.com/dhondta/dataset-packed-pe): Dataset of PE samples packed with many different packers.
 - [Docker Packing Box](https://github.com/dhondta/docker-packing-box): Docker image gathering packers and tools for making datasets of packed executables.
 - [PyPackerDetect](https://github.com/dhondta/PyPackerDetect): Packing detection tool for PE files.
 
