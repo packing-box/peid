@@ -86,9 +86,9 @@ def peidsig():
             "\nThis tool aims to create signatures for the Packed Executable iDentifier (PEiD).\n\n"
     descr = descr.format(__author__, __email__, __copyright__, __license__, __source__)
     examples = "usage examples:\n- " + "\n- ".join([
-        "peid *.exe",
-        "peid *.exe --db path/to/userdb.txt --packer PE-Packer",
-        "peid prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta",
+        "peid-sig *.exe",
+        "peid-sig *.exe --db path/to/userdb.txt --packer PE-Packer",
+        "peid-sig prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta",
     ])
     parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
     parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
