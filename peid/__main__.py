@@ -42,6 +42,8 @@ def main():
                      help="path to the custom database of signatures (default: None ; use the embedded DB)")
     opt.add_argument("-e", "--ep-only", action="store_false",
                      help="consider only entry point signatures (default: True)")
+    opt.add_argument("-m", "--match-once", action="store_true",
+                     help="match only one signature (relies on peutils' db.match() instead of db.match_all()")
     opt.add_argument("-v", "--version", action="store_true", help="include the version in the result")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-b", "--benchmark", action="store_true",
@@ -56,7 +58,8 @@ def main():
     # execute the tool
     if args.benchmark:
         t1 = perf_counter()
-    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, logger=args.logger)
+    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, match_all=not args.match_once,
+                              logger=args.logger)
     for pe, r in results:
         if not args.author:
             r = list(map(lambda x: re.sub(r"\s*\-(\-?\>|\s*by)\s*(.*)$", "", x), r))

@@ -129,6 +129,8 @@ def find_ep_only_signature(*files, length=64, common_bytes_threshold=.5):
     :param common_bytes_threshold: minimal portion of bytes common to each file to be considered a valid signature
     :return:                       signature string (PEiD format)
     """
+    #TODO: improve this algorithm to separate common bytes into [2-MAX] clusters of best patterns, thus yielding
+    #       BEST_N (belongs to [2-MAX]) signatures and configurable through the MAX parameter
     sig, data = [], []
     for f in files:
         if not os.path.isfile(f):
@@ -143,12 +145,12 @@ def find_ep_only_signature(*files, length=64, common_bytes_threshold=.5):
                 sig.append(h(d[i]))
             elif h(d[i]) != sig[-1]:
                 sig[-1] = "??"
-    if sig.count("??") / len(sig) > 1 - common_bytes_threshold:
+    if len(sig) == 0 or sig.count("??") / len(sig) > 1 - common_bytes_threshold:
         raise ValueError("Could not find a suitable signature")
     return " ".join(sig)
 
 
-def identify_packer(*paths, db=None, ep_only=True, logger=None):
+def identify_packer(*paths, db=None, ep_only=True, match_all=True, logger=None):
     """ Identify the packer used in a given executable using the given signatures database.
     
     :param path:    path to the executable file(s)
@@ -165,7 +167,9 @@ def identify_packer(*paths, db=None, ep_only=True, logger=None):
             pe = PE(path)
         if logger:
             logger.debug("Parsing PE file '%s'..." % path)
-        results.append((path, db.match(pe, ep_only=ep_only) or []))
+        matches = [x[0] for x in db.match_all(pe, ep_only=ep_only) or []] if match_all else \
+                  (db.match(pe, ep_only=ep_only) or [])
+        results.append((path, matches))
     return results
 
 
