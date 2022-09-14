@@ -47,18 +47,18 @@ $ peidsig *.exe --db path/to/userdb.txt --packer UPX --version v3.97 --author js
 
 You may also like these:
 
-- [Awesome Executable Packing](https://github.com/dhondta/awesome-executable-packing): A curated list of awesome resources related to executable packing.
-- [Bintropy](https://github.com/dhondta/bintropy): Analysis tool for estimating the likelihood that a binary contains compressed or encrypted bytes.
-- [Dataset of packed ELF files](https://github.com/dhondta/dataset-packed-elf): Dataset of ELF samples packed with many different packers.
-- [Dataset of packed PE files](https://github.com/dhondta/dataset-packed-pe): Dataset of PE samples packed with many different packers.
-- [Docker Packing Box](https://github.com/dhondta/docker-packing-box): Docker image gathering packers and tools for making datasets of packed executables.
-- [PyPackerDetect](https://github.com/dhondta/PyPackerDetect): Packing detection tool for PE files.
+- [Awesome Executable Packing](https://github.com/packing-box/awesome-executable-packing): A curated list of awesome resources related to executable packing.
+- [Bintropy](https://github.com/packing-box/bintropy): Analysis tool for estimating the likelihood that a binary contains compressed or encrypted bytes.
+- [Dataset of packed ELF files](https://github.com/packing-box/dataset-packed-elf): Dataset of ELF samples packed with many different packers.
+- [Dataset of packed PE files](https://github.com/packing-box/dataset-packed-pe): Dataset of PE samples packed with many different packers.
+- [Docker Packing Box](https://github.com/packing-box/docker-packing-box): Docker image gathering packers and tools for making datasets of packed executables.
+- [PyPackerDetect](https://github.com/packing-box/PyPackerDetect): Packing detection tool for PE files.
 
 
 ## :clap:  Supporters
 
-[![Stargazers repo roster for @dhondta/peid](https://reporoster.com/stars/dark/dhondta/peid)](https://github.com/dhondta/peid/stargazers)
+[![Stargazers repo roster for @packing-box/peid](https://reporoster.com/stars/dark/dhondta/peid)](https://github.com/packing-box/peid/stargazers)
 
-[![Forkers repo roster for @dhondta/peid](https://reporoster.com/forks/dark/dhondta/peid)](https://github.com/dhondta/peid/network/members)
+[![Forkers repo roster for @packing-box/peid](https://reporoster.com/forks/dark/dhondta/peid)](https://github.com/packing-box/peid/network/members)
 
 <p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
