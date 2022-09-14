@@ -1,11 +1,9 @@
-<p align="center"><img src="https://github.com/dhondta/peid/raw/main/logo.png"></p>
-<h1 align="center">Packed Executable iDentifier <a href="https://twitter.com/intent/tweet?text=Packed%20Executable%20iDentifier%20-%20Python%20implementation%20of%20PEiD,%20the%20well-known%20packer%20identification%20tool%20for%20PE%20files%20based%20on%20signatures.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpeid%0D%0A&hashtags=python,pe,peid,packer,packingdetection"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
+<p align="center"><img src="https://github.com/packing-box/peid/raw/main/logo.png"></p>
+<h1 align="center">Packed Executable iDentifier <a href="https://twitter.com/intent/tweet?text=Packed%20Executable%20iDentifier%20-%20Python%20implementation%20of%20PEiD,%20the%20well-known%20packer%20identification%20tool%20for%20PE%20files%20based%20on%20signatures.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fpacking-box%2fpeid%0D%0A&hashtags=python,pe,peid,packer,packingdetection"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
 <h3 align="center">Detect packers on PE files using signatures.</h3>
 
 [![PyPi](https://img.shields.io/pypi/v/peid.svg)](https://pypi.python.org/pypi/peid/)
-[![Build Status](https://travis-ci.com/dhondta/peid.svg?branch=main)](https://travis-ci.com/dhondta/peid)
 [![Python Versions](https://img.shields.io/pypi/pyversions/peid.svg)](https://pypi.python.org/pypi/peid/)
-[![Requirements Status](https://requires.io/github/dhondta/peid/requirements/?branch=main)](https://requires.io/github/dhondta/peid/requirements/?branch=main)
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/peid/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/peid?targetFile=requirements.txt)
 [![DOI](https://zenodo.org/badge/383567798.svg)](https://zenodo.org/badge/latestdoi/383567798)
 [![License](https://img.shields.io/pypi/l/peid.svg)](https://pypi.python.org/pypi/peid/)
@@ -57,8 +55,8 @@ You may also like these:
 
 ## :clap:  Supporters
 
-[![Stargazers repo roster for @packing-box/peid](https://reporoster.com/stars/dark/dhondta/peid)](https://github.com/packing-box/peid/stargazers)
+[![Stargazers repo roster for @packing-box/peid](https://reporoster.com/stars/dark/packing-box/peid)](https://github.com/packing-box/peid/stargazers)
 
-[![Forkers repo roster for @packing-box/peid](https://reporoster.com/forks/dark/dhondta/peid)](https://github.com/packing-box/peid/network/members)
+[![Forkers repo roster for @packing-box/peid](https://reporoster.com/forks/dark/packing-box/peid)](https://github.com/packing-box/peid/network/members)
 
 <p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
