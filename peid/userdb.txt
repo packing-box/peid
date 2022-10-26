@@ -1722,10 +1722,6 @@ ep_only = true
 signature = 55 8B EC ?? FF 68 ?? ?? ?? 00 68 ?? ?? 40 00 64 A1 00 00 00 00 50 64 89 25 00 00 00 00 83 EC 58
 ep_only = true
 
-[Armadillo v1.71]
-signature = 55 8B EC 6A FF 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 64 A1
-ep_only = false
-
 [Armadillo v1.72-v1.73]
 signature = 55 8B EC 6A FF 68 E8 C1 ?? ?? 68 F4 86 ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 58
 ep_only = true
@@ -1784,10 +1780,6 @@ ep_only = true
 
 [Armadillo v1.xx - v2.xx -> Silicon Realms Toolworks]
 signature = 55 8B EC 6A FF 68 50 8C 4C 00 68 D0 82 4A 00 64 A1
-ep_only = true
-
-[Armadillo v1.xx-v2.xx]
-signature = 55 8B EC 53 8B 5D 08 56 8B 75 0C 57 8B 7D 10 85 F6
 ep_only = true
 
 [Armadillo v2.00]
@@ -22357,4 +22349,3 @@ ep_only = true
 [yzpack V2.0 -> UsAr]
 signature = 5A 52 45 60 83 EC 18 8B EC 8B FC 33 C0 64 8B 40 30 78 0C 8B 40 0C 8B 70 1C AD 8B 40 08 EB 09 8B 40 34 83 C0 7C 8B 40 3C AB E9 ?? ?? ?? ?? B4 09 BA 00 00 1F CD 21 B8 01 4C CD 21 40 00 00 00 50 45 00 00 4C 01 02 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 E0 00
 ep_only = true
-
