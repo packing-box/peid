@@ -9,7 +9,7 @@ __all__ = ["find_ep_only_signature", "identify_packer", "open_signature_db", "DB
 
 
 __log = lambda l, m, lvl="debug": getattr(l, lvl)(m) if l else None
-DB = os.path.join(os.path.dirname(__file__), "userdb.ini")
+DB = os.path.join(os.path.dirname(__file__), "userdb.txt")
 
 
 class SignatureDatabase(Base):
@@ -183,3 +183,4 @@ def open_signature_db(path, logger=None):
     if logger:
         logger.debug("Opening signature database '%s'..." % path)
     return SignatureDatabase(path)
+
