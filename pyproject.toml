@@ -19,7 +19,7 @@ authors = [
 description = "Python implementation of the Packed Executable iDentifier (PEiD)"
 license = {file = "LICENSE"}
 keywords = ["packing", "packed-executable", "packing-detection", "pe"]
-requires-python = ">=3.7,<4"
+requires-python = ">=3.8,<4"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -28,7 +28,7 @@ classifiers = [
   "Intended Audience :: Other Audience",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
