@@ -16,8 +16,6 @@ This tool is an implementation in Python of the Packed Executable iDentifier ([P
 - [Ice3man543/MalScan](https://github.com/Ice3man543/MalScan)
 - [PEiD Tab](https://www.top4download.com/peid-tab/screenshot-gaqrbxek.html)
 
-It relies on [`pefile`](https://github.com/erocarrera/pefile) for abstracting PE files and reading signatures databases.
-
 ```sh
 $ pip install peid
 ```

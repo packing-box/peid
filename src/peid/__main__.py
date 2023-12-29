@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 import logging
 import re
-import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 from os.path import exists
 from time import perf_counter
@@ -40,10 +39,12 @@ def main():
     opt.add_argument("-a", "--author", action="store_true", help="include author in the result")
     opt.add_argument("-d", "--db", default=DB, type=valid_file,
                      help="path to the custom database of signatures (default: None ; use the embedded DB)")
-    opt.add_argument("-e", "--ep-only", action="store_false",
-                     help="consider only entry point signatures (default: True)")
-    opt.add_argument("-m", "--match-once", action="store_true",
-                     help="match only one signature (relies on peutils' db.match() instead of db.match_all()")
+    grp = opt.add_mutually_exclusive_group()
+    grp.add_argument("-e", "--ep-only", action="store_false",
+                     help="only consider signatures from entry point (default: True)")
+    opt.add_argument("-m", "--match-once", action="store_true", help="match only one signature")
+    grp.add_argument("-s", "--section-start-only", dest="sec_start_only", action="store_true",
+                     help="consider only signatures from section starts (default: False)")
     opt.add_argument("-v", "--version", action="store_true", help="include the version in the result")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-b", "--benchmark", action="store_true",
@@ -58,8 +59,8 @@ def main():
     # execute the tool
     if args.benchmark:
         t1 = perf_counter()
-    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, match_all=not args.match_once,
-                              logger=args.logger)
+    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, sec_start_only=args.sec_start_only,
+                              match_all=not args.match_once, logger=args.logger)
     for pe, r in results:
         if not args.author:
             r = list(map(lambda x: re.sub(r"\s*\-(\-?\>|\s*by)\s*(.*)$", "", x), r))
@@ -76,7 +77,7 @@ def main():
                 print("\n".join(r))
             return 0
         else:
-            print("%s %s" % (pe, ",".join(r)))
+            print(f"{pe} {','.join(r)}")
     dt = str(perf_counter() - t1) if args.benchmark else ""
     if dt != "":
         print(dt)
@@ -110,8 +111,12 @@ def peidsig():
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
     args = parser.parse_args()
+    logging.basicConfig()
+    args.logger = logging.getLogger("peid")
+    args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
     try:
-        s = find_ep_only_signature(*args.path, length=args.length, common_bytes_threshold=args.bytes_threshold)
+        s = find_ep_only_signature(*args.path, length=args.length, common_bytes_threshold=args.bytes_threshold,
+                                   logger=args.logger)
     except ValueError:
         print("[ERROR] Could not find a suitable signature")
         return 1
@@ -122,7 +127,7 @@ def peidsig():
         if args.author:
             n += " -> " + args.author
         if args.db:
-            db = SignatureDatabase(args.db)
+            db = SignaturesDB(args.db, logger=args.logger)
             db.set(args.packer, s, True, args.author, args.version)
             db.dump()
         s = "[%s]\nsignature = %s\nep_only = true" % (n, s)

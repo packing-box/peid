@@ -9,7 +9,7 @@ version = {attr = "peid.__info__.__version__"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.txt"]
+"*" = [".*.json", "*.txt"]
 
 [project]
 name = "peid"
@@ -36,9 +36,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Security",
 ]
-dependencies = [
-  "pefile",
-]
+dependencies = ["msgspec"]
 dynamic = ["version"]
 
 [project.readme]
