@@ -97,8 +97,10 @@ def peidsig():
     parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
     parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
     sig = parser.add_argument_group("signature arguments")
-    sig.add_argument("-l", "--length", type=int, default=64, help="length of bytes to be considered for the signature"
-                     " (default: 64)")
+    sig.add_argument("-m", "--min-length", type=int, default=16, help="minimum length of bytes to be considered for the"
+                     " signature (default: 16)")
+    sig.add_argument("-M", "--max-length", type=int, default=64, help="maximum length of bytes to be considered for the"
+                     " signature (default: 64)")
     sig.add_argument("-t", "--bytes-threshold", type=valid_percentage, default=.5, help="proportion of common bytes"
                      " to be considered from the samples ; 0 <= x <= 1 (default: .5)")
     opt = parser.add_argument_group("optional arguments")
@@ -110,15 +112,16 @@ def peidsig():
                      "formatted signature is displayed\n    in addition, if --db is defined, the signature is saved")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    extra.add_argument("--verbose", action="store_true", help="display debug information (default: False)")
     args = parser.parse_args()
     logging.basicConfig()
     args.logger = logging.getLogger("peid")
     args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
     try:
-        s = find_ep_only_signature(*args.path, length=args.length, common_bytes_threshold=args.bytes_threshold,
-                                   logger=args.logger)
+        s = find_ep_only_signature(*args.path, minlength=args.min_length, maxlength=args.max_length,
+                                   common_bytes_threshold=args.bytes_threshold, logger=args.logger)
     except ValueError:
-        print("[ERROR] Could not find a suitable signature")
+        print("[ERROR] Could not find a suitable signature\n")
         return 1
     if args.packer:
         n = args.packer
