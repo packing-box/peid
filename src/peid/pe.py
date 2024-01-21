@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-from functools import wraps
+from functools import lru_cache, wraps
 from os.path import getsize
 
 
@@ -7,8 +7,8 @@ __all__ = ["PE"]
 
 
 class PE:
-    def __init__(self, path, debug=False):
-        self.path, self.size, self.__debug = path, getsize(path), debug
+    def __init__(self, path, logger=None):
+        self.path, self.size, self.logger = path, getsize(path), logger
         self.__fd = f = open(path, "rb")
         # check MZ signature
         if f.read(2) != b"MZ":
@@ -51,7 +51,10 @@ class PE:
             offsets = range(0, self.size-n)
         for o in offsets:
             self.__fd.seek(o)
-            yield self.__fd.read(min(n, self.size-o))
+            r = self.__fd.read(min(n, self.size-o))
+            if self.logger:
+                self.logger.debug(" ".join(f"{b:02X}" for b in r))
+            yield r
     
     @property
     def entrypoint_offset(self):
@@ -71,9 +74,9 @@ class PE:
         # 40 bytes per section header entry
         offsets = []
         for i in range(self.number_of_sections):
-            if self.__debug:
+            if self.logger:
                 f.seek(start + i * 40)
-                print(f.read(8).rstrip(b"\0").decode("utf-8"))
+                self.logger.debug(f.read(8).rstrip(b"\0").decode("utf-8"))
             f.seek(start + i * 40 + 20)
             offsets.append(int.from_bytes(f.read(4), "little"))
         return offsets

@@ -50,4 +50,5 @@ repository = "https://github.com/packing-box/peid"
 
 [project.scripts]
 peid = "peid.__main__:main"
+peid-db = "peid.__main__:peiddb"
 peid-sig = "peid.__main__:peidsig"

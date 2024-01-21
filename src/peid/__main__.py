@@ -7,6 +7,23 @@ from time import perf_counter
 
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 from .__init__ import *
+from .db import DB
+
+
+def _parser(name, description, examples):
+    descr = f"{name} {__version__}\n\nAuthor   : {__author__} ({__email__})\nCopyright: {__copyright__}\nLicense  :" \
+            f" {__license__}\nSource   : {__source__}\n\n{description}.\n\n"
+    examples = "usage examples:\n- " + "\n- ".join(examples)
+    return ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
+
+
+def _setup(parser):
+    args = parser.parse_args()
+    if hasattr(args, "verbose"):
+        logging.basicConfig()
+        args.logger = logging.getLogger("peid")
+        args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
+    return args
 
 
 def valid_file(path):
@@ -24,16 +41,9 @@ def valid_percentage(percentage):
 
 def main():
     """ Tool's main function """
-    descr = "PEiD {}\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
-            "\nThis tool is an implementation in Python of the Packed Executable iDentifier (PEiD) in the scope of " \
-            "packing detection for Windows PE files based on signatures.\n\n"
-    descr = descr.format(__version__, __author__, __email__, __copyright__, __license__, __source__)
-    examples = "usage examples:\n- " + "\n- ".join([
-        "peid program.exe",
-        "peid program.exe -b",
-        "peid program.exe --db custom_sigs_db.txt",
-    ])
-    parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
+    parser = _parser("PEiD", "This tool is an implementation in Python of the Packed Executable iDentifier (PEiD) in "
+                     "the scope of packing detection for Windows PE files based on signatures",
+                     ["peid program.exe", "peid program.exe -b", "peid program.exe --db custom_sigs_db.txt"])
     parser.add_argument("path", type=valid_file, nargs="+", help="path to portable executable")
     opt = parser.add_argument_group("optional arguments")
     opt.add_argument("-a", "--author", action="store_true", help="include author in the result")
@@ -51,17 +61,14 @@ def main():
                        help="enable benchmarking, output in seconds (default: False)")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
     extra.add_argument("--verbose", action="store_true", help="display debug information (default: False)")
-    args = parser.parse_args()
-    logging.basicConfig()
-    args.logger = logging.getLogger("peid")
-    args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
-    code = 0
+    args = _setup(parser)
     # execute the tool
     if args.benchmark:
         t1 = perf_counter()
     results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, sec_start_only=args.sec_start_only,
                               match_all=not args.match_once, logger=args.logger)
     for pe, r in results:
+        r = r or []
         if not args.author:
             r = list(map(lambda x: re.sub(r"\s*\-(\-?\>|\s*by)\s*(.*)$", "", x), r))
         if not args.version:
@@ -84,17 +91,30 @@ def main():
     return 0
 
 
+def peiddb():
+    """ Additional tool for inspecting a database of signatures """
+    parser = _parser("PEiD-DB", "This tool aims to inspect the database of signatures of the Packed Executable "
+                     "iDentifier (PEiD)", ["peid-db --filter UPX", "peid-db --db custom-userdb.txt --filter '(?i)upx'"])
+    opt = parser.add_argument_group("optional arguments")
+    opt.add_argument("-d", "--db", default=DB, type=valid_file,
+                     help="path to the custom database of signatures (default: None ; use the embedded DB)")
+    opt.add_argument("-f", "--filter", help="pattern for filtering signatures (default: None ; display all)")
+    extra = parser.add_argument_group("extra arguments")
+    extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    args = _setup(parser)
+    db = SignaturesDB(args.db)
+    c = 0
+    for sig in db.filter(args.filter):
+        print(sig, end="")
+        c += 1
+    print(f"{c} signatures filtered")
+
+
 def peidsig():
     """ Additional tool for creating signatures """
-    descr = "PEiD-Sig 1.0\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
-            "\nThis tool aims to create signatures for the Packed Executable iDentifier (PEiD).\n\n"
-    descr = descr.format(__author__, __email__, __copyright__, __license__, __source__)
-    examples = "usage examples:\n- " + "\n- ".join([
-        "peid-sig *.exe",
-        "peid-sig *.exe --db path/to/userdb.txt --packer PE-Packer",
-        "peid-sig prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta",
-    ])
-    parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter, add_help=False)
+    parser = _parser("PEiD-Sig", "This tool aims to create signatures for the Packed Executable iDentifier (PEiD)",
+                     ["peid-sig *.exe", "peid-sig *.exe --db path/to/userdb.txt --packer PE-Packer",
+                      "peid-sig prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta"])
     parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
     sig = parser.add_argument_group("signature arguments")
     sig.add_argument("-m", "--min-length", type=int, default=16, help="minimum length of bytes to be considered for the"
@@ -113,10 +133,7 @@ def peidsig():
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
     extra.add_argument("--verbose", action="store_true", help="display debug information (default: False)")
-    args = parser.parse_args()
-    logging.basicConfig()
-    args.logger = logging.getLogger("peid")
-    args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
+    args = _setup(parser)
     try:
         s = find_ep_only_signature(*args.path, minlength=args.min_length, maxlength=args.max_length,
                                    common_bytes_threshold=args.bytes_threshold, logger=args.logger)

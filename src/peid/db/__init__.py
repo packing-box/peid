@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import re
-from os.path import abspath, basename, dirname, exists, join
+from os.path import abspath, basename, dirname, exists, expanduser, join
 
 from ..pe import PE
 
@@ -16,9 +16,9 @@ SIG = re.compile(r"\[(.*?)\]\s+?signature\s*=\s*(.*?)((?:\s+\?\?)*)\s*ep_only\s*
 
 class SignaturesTree:
     """ Lightweight class for loading signatures search tree and matching signatures. """
-    def __init__(self, path=None, encoding="latin-1", cache=True, keep_trailing_wildcards=False):
-        self.encoding, self.keep_trailing_wildcards = encoding, keep_trailing_wildcards
-        self.path = path = abspath(path or DB)
+    def __init__(self, path=None, encoding="latin-1", cache=True, keep_trailing_wildcards=False, logger=None):
+        self.encoding, self.keep_trailing_wildcards, self.logger = encoding, keep_trailing_wildcards, logger
+        self.path = path = abspath(expanduser(path or DB))
         self.json = join(dirname(path), f".{basename(path).replace('.','_')}{['','_tw'][keep_trailing_wildcards]}.json")
         if exists(self.json):
             from msgspec.json import decode
@@ -77,7 +77,7 @@ class SignaturesTree:
                     subtree = subtree[byte]
                 else:
                     break
-        with PE(pe) as f:
+        with PE(pe, logger=self.logger) as f:
             if ep_only:
                 for byteseq in f.read(n_bytes, f.entrypoint_offset):
                     _match(self.__tree['ep_only'], byteseq)
@@ -128,7 +128,7 @@ class SignaturesDB(SignaturesTree):
         """ Output a signature as a string. """
         cond = f"ep_only = true\n" if ep_only else \
                f"section_start_only = true\n" if sec_start_only else ""
-        sig = f"[{name}\nsignature = {signature}\n{cond}\n"
+        return f"[{name}]\nsignature = {signature}\n{cond}\n"
     
     def compare(self, db, encoding=None):
         """ Compare this database with the given one.
@@ -137,8 +137,6 @@ class SignaturesDB(SignaturesTree):
         :param encoding: encoding for dumping the database
         :return:         generator producing signatures not present in this database but well in the compared one
         """
-        if not self.full_init:
-            raise NotImplementedError("Signatures database not fully loaded ; re-initialize with full_init=True")
         for sig, fields in self.__get(db, encoding).signatures.items():
             if sig not in self.signatures:
                 yield fields[0]
@@ -149,8 +147,6 @@ class SignaturesDB(SignaturesTree):
         :param filename: path to database dump
         :param encoding: encoding for dumping the database
         """
-        if not self.full_init:
-            raise NotImplementedError("Signatures database not fully loaded ; re-initialize with full_init=True")
         with open(filename or self.path, 'wt', encoding=encoding or self.encoding) as f:
             for l in self.comments:
                 f.write("; %s\n" % l)
@@ -159,6 +155,14 @@ class SignaturesDB(SignaturesTree):
                 packer, signature, _, ep_only, sec_start_only = fields
                 f.write("[%s]\nsignature = %s\nep_only = %s\n%s\n" % (packer, signature, str(ep_only).lower(),
                         ["", "section_start_only = %s\n" % str(sec_start_only).lower()][sec_start_only]))
+    
+    def filter(self, pattern, text=True):
+        """ Filter signatures based on a given name pattern. """
+        regex = re.compile(pattern or r".*")
+        for name, signature, trailing_wildcards, ep_only, sec_start_only in self.signatures.values():
+            if regex.search(name):
+                r = (name, f"{' '.join(signature)} {trailing_wildcards}", ep_only, sec_start_only)
+                yield self.__signature(*r) if text else r
     
     def merge(self, *dbs):
         """ Merge multiple signatures databases.

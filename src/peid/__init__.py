@@ -60,7 +60,7 @@ def identify_packer(*paths, db=None, ep_only=True, sec_start_only=False, match_a
     :param ep_only: consider only entry point signatures
     :return:        return the matching packers
     """
-    db, results = SignaturesTree(db), []
+    db, results = SignaturesTree(db, logger=logger), []
     for path in paths:
         results.append((path, db.match(path, ep_only, sec_start_only, match_all)))
     return results

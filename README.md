@@ -32,10 +32,16 @@ $ peid program.exe
 $ peid program.exe --db custom_sigs_db.txt
 ```
 
-The second tool allows to create and integrate new signatures.
+The second tool allows to inspect signatures.
 
 ```sh
-$ peidsig *.exe --db path/to/userdb.txt --packer UPX --version v3.97 --author jsmith
+$ peid-db --db path/to/userdb.txt --filter UPX
+```
+
+The third tool allows to create and integrate new signatures.
+
+```sh
+$ peid-sig *.exe --db path/to/userdb.txt --packer UPX --version v3.97 --author jsmith
 ```
 
 
