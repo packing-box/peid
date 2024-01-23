@@ -20,9 +20,8 @@ def _parser(name, description, examples):
 def _setup(parser):
     args = parser.parse_args()
     if hasattr(args, "verbose"):
-        logging.basicConfig()
+        logging.basicConfig(level=[logging.INFO, logging.DEBUG][args.verbose])
         args.logger = logging.getLogger("peid")
-        args.logger.setLevel([logging.INFO, logging.DEBUG][args.verbose])
     return args
 
 
@@ -55,12 +54,12 @@ def main():
     opt.add_argument("-m", "--match-once", action="store_true", help="match only one signature")
     grp.add_argument("-s", "--section-start-only", dest="sec_start_only", action="store_true",
                      help="consider only signatures from section starts (default: False)")
-    opt.add_argument("-v", "--version", action="store_true", help="include the version in the result")
+    opt.add_argument("--version", action="store_true", help="include the version in the result")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-b", "--benchmark", action="store_true",
                        help="enable benchmarking, output in seconds (default: False)")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
-    extra.add_argument("--verbose", action="store_true", help="display debug information (default: False)")
+    extra.add_argument("-v", "--verbose", action="store_true", help="display debug information (default: False)")
     args = _setup(parser)
     # execute the tool
     if args.benchmark:

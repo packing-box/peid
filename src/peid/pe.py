@@ -1,9 +1,15 @@
 # -*- coding: UTF-8 -*-
+import builtins
 from functools import lru_cache, wraps
 from os.path import getsize
 
 
 __all__ = ["PE"]
+
+
+class MalformedPE(ValueError):
+    __module__ = "builtins"
+builtins.MalformedPE = MalformedPE
 
 
 class PE:
@@ -61,9 +67,17 @@ class PE:
         # EP is at byte 40 of the PE header (when image file)
         self.__fd.seek(self.pe_offset + 40)
         ep = int.from_bytes(self.__fd.read(4), "little")
+        if self.logger:
+            self.logger.debug(f"Entry point: 0x{ep:08x}")
         for vsize, vaddr, rsize, raddr in self.itersections():
-            if vaddr <= ep < vaddr + rsize:
-                return raddr + ep - vaddr
+            if vaddr <= ep < vaddr + vsize:
+                o = raddr + ep - vaddr
+                if self.logger:
+                    self.logger.debug(f"Entry point offset: {o}")
+                return o
+        self.__fd.seek(0)
+        c = self.__fd.read()
+        raise MalformedPE(f"Entry point (0x{ep:08x}) offset is outside sections (file size: 0x{len(c):08x})")
     
     @property
     def sections_offsets(self):
