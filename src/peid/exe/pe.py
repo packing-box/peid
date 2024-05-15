@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import builtins
-from functools import lru_cache, wraps
 from os.path import getsize
 
 
@@ -26,10 +25,10 @@ class PE:
         f.seek(self.pe_offset)
         if f.read(4) != b"PE\x00\x00":
             raise OSError("Invalid PE signature")
-        # ready NumberOfSections 
+        # read NumberOfSections 
         f.seek(self.pe_offset + 6)
         self.number_of_sections = int.from_bytes(f.read(2), "little")
-        # ready SizeOfOptionalHeader
+        # read SizeOfOptionalHeader
         f.seek(self.pe_offset + 20)
         self.size_of_opt_header = int.from_bytes(f.read(2), "little")
     

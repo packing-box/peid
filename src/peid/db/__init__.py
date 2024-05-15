@@ -2,7 +2,7 @@
 import re
 from os.path import abspath, basename, dirname, exists, expanduser, join
 
-from ..pe import PE
+from ..exe import open_exe
 
 
 __all__ = ["DB", "SignaturesDB", "SignaturesTree"]
@@ -77,7 +77,7 @@ class SignaturesTree:
                     subtree = subtree[byte]
                 else:
                     break
-        with PE(pe, logger=self.logger) as f:
+        with open_exe(pe, logger=self.logger) as f:
             if ep_only:
                 for byteseq in f.read(n_bytes, f.entrypoint_offset):
                     _match(self.__tree['ep_only'], byteseq)

@@ -2,7 +2,7 @@
 import os
 
 from .db import SignaturesTree, SignaturesDB
-from .pe import PE
+from .exe import open_exe
 
 __all__ = ["find_ep_only_signature", "identify_packer", "SignaturesDB"]
 
@@ -20,13 +20,15 @@ def find_ep_only_signature(*files, minlength=16, maxlength=64, common_bytes_thre
     data = []
     for f in files:
         try:
-            with PE(f) as pe:
-                bytes_from_ep = [f"{b:02X}" for b in list(pe.read(maxlength, pe.entrypoint_offset))[0]]
+            with open_exe(f) as exe:
+                bytes_from_ep = [f"{b:02X}" for b in list(exe.read(maxlength, exe.entrypoint_offset))[0]]
             maxlength = max(min(len(bytes_from_ep), maxlength), minlength)
             data.append(bytes_from_ep)
-        except (TypeError, ValueError) as e:
+        except (OSError, TypeError, ValueError) as e:
             if logger:
                 logger.debug(f"{f}: {e}")
+            else:
+                raise
     # now determine a signature
     length = maxlength
     while length >= minlength:
