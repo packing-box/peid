@@ -54,18 +54,18 @@ def find_ep_only_signature(*files, minlength=16, maxlength=64, common_bytes_thre
     raise ValueError("Could not find a suitable signature")
 
 
-def identify_packer(*paths, db=None, ep_only=True, sec_start_only=False, match_all=True, logger=None):
+def identify_packer(*paths_or_buffers, db=None, ep_only=True, sec_start_only=False, match_all=True, logger=None):
     """ Identify the packer used in a given executable using the given signatures database.
     
-    :param path:    path to the executable file(s)
-    :param db:      path to the database
-    :param ep_only: consider only entry point signatures
-    :return:        return the matching packers
+    :param paths_or_buffers: path to the executable file(s) or opened file buffers (io.BufferedReader)
+    :param db:               path to the database
+    :param ep_only:          consider only entry point signatures
+    :return:                 return the matching packers
     """
     db, results = SignaturesTree(db, logger=logger), []
     if logger:
         logger.debug(f"ep_only={ep_only}, sec_start_only={sec_start_only}, match_all={match_all}")
-    for path in paths:
-        results.append((path, db.match(path, ep_only, sec_start_only, match_all)))
+    for exe in paths_or_buffers:
+        results.append((getattr(exe, "name", exe), db.match(exe, ep_only, sec_start_only, match_all)))
     return results
 
