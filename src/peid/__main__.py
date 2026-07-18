@@ -1,16 +1,11 @@
 # -*- coding: UTF-8 -*-
-import logging
-import re
-from argparse import ArgumentParser, RawTextHelpFormatter
-from os.path import exists
-from time import perf_counter
-
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 from .__init__ import *
 from .db import DB
 
 
 def _parser(name, description, examples):
+    from argparse import ArgumentParser, RawTextHelpFormatter
     descr = f"{name} {__version__}\n\nAuthor   : {__author__} ({__email__})\nCopyright: {__copyright__}\nLicense  :" \
             f" {__license__}\nSource   : {__source__}\n\n{description}.\n\n"
     examples = "usage examples:\n- " + "\n- ".join(examples)
@@ -18,6 +13,7 @@ def _parser(name, description, examples):
 
 
 def _setup(parser):
+    import logging
     args = parser.parse_args()
     if hasattr(args, "verbose"):
         logging.basicConfig(level=[logging.INFO, logging.DEBUG][args.verbose])
@@ -25,28 +21,45 @@ def _setup(parser):
     return args
 
 
-def valid_file(path):
+def _valid_file(path):
+    from os.path import exists
     if not exists(path):
         raise ValueError("input file does not exist")
     return path
 
 
-def valid_percentage(percentage):
+def _valid_percentage(percentage):
     p = float(percentage)
     if not 0. <= p <= 1.:
         raise ValueError("Not a percentage")
     return p
 
 
-def main():
-    """ Tool's main function """
+def _valid_expression(expr):
+    import re
+    from operator import eq, le, lt, ge, gt
+    m = re.match(r"^(==|<|>|<=|>=)(\d+)$", expr)
+    if m is None:
+        raise ValueError("Not a size expression")
+    op, s = m.groups()
+    op, s = {'==': eq, '<': lt, '>': gt, '<=': le, '>=': ge}[op], int(s)
+    if s < 0:
+        raise ValueError("Not a size")
+    return lambda x: op(x, s)
+
+
+# tool main functions
+def peid():
+    """ PEID's main function """
+    import re
+    from time import perf_counter
     parser = _parser("PEiD", "This tool is an implementation in Python of the Packed Executable iDentifier (PEiD) in "
                      "the scope of packing detection for Windows PE files based on signatures",
                      ["peid program.exe", "peid program.exe -b", "peid program.exe --db custom_sigs_db.txt"])
-    parser.add_argument("path", type=valid_file, nargs="+", help="path to portable executable")
+    parser.add_argument("path", type=_valid_file, nargs="+", help="path to portable executable")
     opt = parser.add_argument_group("optional arguments")
     opt.add_argument("-a", "--author", action="store_true", help="include author in the result")
-    opt.add_argument("-d", "--db", default=DB, type=valid_file,
+    opt.add_argument("-d", "--db", default=DB, type=_valid_file,
                      help="path to the custom database of signatures (default: None ; use the embedded DB)")
     grp = opt.add_mutually_exclusive_group()
     grp.add_argument("-e", "--ep-only", action="store_false",
@@ -95,18 +108,25 @@ def peiddb():
     parser = _parser("PEiD-DB", "This tool aims to inspect the database of signatures of the Packed Executable "
                      "iDentifier (PEiD)", ["peid-db --filter UPX", "peid-db --db custom-userdb.txt --filter '(?i)upx'"])
     opt = parser.add_argument_group("optional arguments")
-    opt.add_argument("-d", "--db", default=DB, type=valid_file,
+    opt.add_argument("-d", "--db", default=DB, type=_valid_file,
                      help="path to the custom database of signatures (default: None ; use the embedded DB)")
     opt.add_argument("-f", "--filter", help="pattern for filtering signatures (default: None ; display all)")
+    opt.add_argument("-o", "--output", help="path to write the signatures database to (default: None)")
+    opt.add_argument("-r", "--remove", action="store_true", help="remove the filtered signatures (default: False)")
+    opt.add_argument("-s", "--size", type=_valid_expression, help="size expression for filtering signatures "
+                                                                  "(default: None ; display all)")
     extra = parser.add_argument_group("extra arguments")
     extra.add_argument("-h", "--help", action="help", help="show this help message and exit")
     args = _setup(parser)
     db = SignaturesDB(args.db)
     c = 0
-    for sig in db.filter(args.filter):
+    for sig in db.filter(args.filter, size=args.size, remove=args.remove):
         print(sig, end="")
         c += 1
-    print(f"{c} signatures filtered")
+    print(f"{c} signatures {['filtered', 'removed'][args.remove and args.output is not None]}")
+    if args.output:
+        db.dump(args.output)
+        print(f"new database saved to '{args.output}'")
 
 
 def peidsig():
@@ -114,13 +134,13 @@ def peidsig():
     parser = _parser("PEiD-Sig", "This tool aims to create signatures for the Packed Executable iDentifier (PEiD)",
                      ["peid-sig *.exe", "peid-sig *.exe --db path/to/userdb.txt --packer PE-Packer",
                       "peid-sig prg1.exe prg2.exe prg3.exe --packer PE-Packer --version v1.0 --author dhondta"])
-    parser.add_argument("path", type=valid_file, nargs="+", help="path to packed portable executables")
+    parser.add_argument("path", type=_valid_file, nargs="+", help="path to packed portable executables")
     sig = parser.add_argument_group("signature arguments")
     sig.add_argument("-m", "--min-length", type=int, default=16, help="minimum length of bytes to be considered for the"
                      " signature (default: 16)")
     sig.add_argument("-M", "--max-length", type=int, default=64, help="maximum length of bytes to be considered for the"
                      " signature (default: 64)")
-    sig.add_argument("-t", "--bytes-threshold", type=valid_percentage, default=.5, help="proportion of common bytes"
+    sig.add_argument("-t", "--bytes-threshold", type=_valid_percentage, default=.5, help="proportion of common bytes"
                      " to be considered from the samples ; 0 <= x <= 1 (default: .5)")
     opt = parser.add_argument_group("optional arguments")
     opt.add_argument("-a", "--author", help="author of the signature")
