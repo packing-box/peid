@@ -17,18 +17,19 @@ SIG = re.compile(r"\[(.*?)\]\s+?signature\s*=\s*(.*?)((?:\s+\?\?)*)\s*ep_only\s*
 class SignaturesTree:
     """ Lightweight class for loading signatures search tree and matching signatures. """
     def __init__(self, path=None, encoding="utf-8", cache=True, keep_trailing_wildcards=False, logger=None):
-        from os.path import abspath, exists, expanduser
+        from os.path import abspath, exists, expanduser, getmtime
         self.encoding, self.keep_trailing_wildcards, self.logger = encoding, keep_trailing_wildcards, logger
         self.path = path = abspath(expanduser(path or DB))
         self.json = join(dirname(path), f".{basename(path).replace('.','_')}{['','_tw'][keep_trailing_wildcards]}.json")
-        if exists(self.json):
+        if not exists(path):
+            with open(path, 'wt') as f:
+                f.write("; 0 signatures in list\n")
+        # only reuse the cached tree if it is not older than the database itself
+        if exists(self.json) and getmtime(self.json) >= getmtime(path):
             from msgspec.json import decode
             with open(self.json, 'rb') as f:
                 self.__tree = decode(f.read())
         else:
-            if not exists(path):
-                with open(path, 'wt') as f:
-                    f.write("; 0 signature in list")
             self.__load(path, encoding, cache)
     
     def __iter__(self):
@@ -59,8 +60,12 @@ class SignaturesTree:
             tree['value'] = name
         if cache:
             from msgspec.json import encode
-            with open(self.json, 'wb') as f:
-                f.write(encode(self.__tree))
+            try:
+                with open(self.json, 'wb') as f:
+                    f.write(encode(self.__tree))
+            except OSError as e:  # e.g. read-only installation folder ; simply work without the cache
+                if self.logger:
+                    self.logger.debug(f"Could not cache the search tree: {e}")
     
     def match(self, pe, ep_only=True, sec_start_only=False, match_all=True):
         """ Match a given bytes sequence against the search tree. """
@@ -78,6 +83,10 @@ class SignaturesTree:
                     subtree = subtree[byte]
                 else:
                     break
+            else:
+                # all bytes consumed ; a signature may end exactly here
+                if 'value' in subtree:
+                    matches.append(subtree['value'])
         with open_exe(pe, logger=self.logger) as f:
             if ep_only:
                 for byteseq in f.read(n_bytes, f.entrypoint_offset):
@@ -100,8 +109,8 @@ class SignaturesTree:
 
 class SignaturesDB(SignaturesTree):
     """ Heavier class for providing more DB-related operations like comparing with another DB, adding new rules, ... """
-    def __init__(self, path=None, encoding="utf-8", cache=True):
-        super(SignaturesDB, self).__init__(path, encoding, cache)
+    def __init__(self, path=None, encoding="utf-8", cache=True, logger=None):
+        super(SignaturesDB, self).__init__(path, encoding, cache, logger=logger)
         self.signatures = {}
         # use the signature bytes as the key
         for fields in self:
@@ -127,20 +136,18 @@ class SignaturesDB(SignaturesTree):
     
     def __signature(self, name, signature, ep_only, sec_start_only, size):
         """ Output a signature as a string. """
-        cond = f"ep_only = true" if ep_only else f"section_start_only = true" if sec_start_only else ""
+        cond = ["", "section_start_only = true\n"][sec_start_only]
         sigs = "" if size is None else f"size = {size}B\n"
-        return f"[{name}]\nsignature = {signature}\n{cond}\n{sigs}\n"
-    
+        return f"[{name}]\nsignature = {signature}\nep_only = {str(ep_only).lower()}\n{cond}{sigs}\n"
+
     def __update_nsig(self):
-        # find the line with the number of signatures to updated it
-        for i, c in enumerate(self.comments):
-            if c.endswith("signatures in list"):
-                break
         c = f"{len(self)} signatures in list"
-        try:  # if the line exists, replace it
-            self.comments[i] = c
-        except IndexError:  # otherwise add it
-            self.comments.append(c)
+        # find the line with the number of signatures to update it, otherwise add it
+        for i, comment in enumerate(self.comments):
+            if re.search(r"signatures? in list$", comment):
+                self.comments[i] = c
+                return
+        self.comments.append(c)
     
     def compare(self, db, encoding=None):
         """ Compare this database with the given one.
@@ -164,7 +171,8 @@ class SignaturesDB(SignaturesTree):
                 f.write("; %s\n" % l)
             f.write("\n")
             for sig, fields in sorted(self.signatures.items(), key=lambda x: x[1][0]):
-                name, signature, _, ep_only, sec_start_only = fields
+                name, signature, trailing_wildcards, ep_only, sec_start_only = fields
+                signature = " ".join(list(signature) + trailing_wildcards.split())
                 cond = ["", "section_start_only = %s\n" % str(sec_start_only).lower()][sec_start_only]
                 f.write(f"[{name}]\nsignature = {signature}\nep_only = {str(ep_only).lower()}\n{cond}\n")
     
@@ -207,7 +215,7 @@ class SignaturesDB(SignaturesTree):
         """ Add/update a signature based on the given data.
         
         :param name:           signature's name
-        :param signature:      signature's bytes
+        :param signature:      signature's bytes (list of tokens or space-separated string)
         :param ep_only:        whether the signature is to be used from the entry point
         :param sec_start_only: whether the signature is to be used from the start of sections
         :param author:         author to be mentioned for the signature
@@ -220,7 +228,10 @@ class SignaturesDB(SignaturesTree):
             name += " %s" % version
         if author:
             name += " -> %s" % author
-        self.signatures[tuple(signature)] = (name, signature, "", ep_only, False)
+        if isinstance(signature, str):
+            signature = signature.split()
+        signature = list(signature)
+        self.signatures[tuple(signature)] = (name, signature, "", ep_only, sec_start_only)
         self.__update_nsig()
     
     def unset(self, name=None, signature=None):
@@ -229,7 +240,7 @@ class SignaturesDB(SignaturesTree):
             if signature:
                 del self.signatures[tuple(signature)]
             else:
-                for sig in [d[1] for s, d in self.signatures.items() if name == d[0]]:
+                for sig in [s for s, d in self.signatures.items() if name == d[0]]:
                     del self.signatures[sig]
             self.__update_nsig()
             return

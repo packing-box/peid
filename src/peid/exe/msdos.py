@@ -22,7 +22,8 @@ class MSDOS(EXE):
     
     @property
     def entrypoint_offset(self):
-        return (self.initial_cs << 4) + self.initial_ip
+        # CS:IP is relative to the load module, which starts right after the header
+        return self.header_size + (self.initial_cs << 4) + self.initial_ip
     
     @property
     def file_size(self):
@@ -38,6 +39,6 @@ class MSDOS(EXE):
         self._fd.seek(self.relocation_table_offset)
         for _ in range(self.number_relocations):
             segment, offset = struct.unpack("<HH", self._fd.read(4))
-            offsets.append((segment << 4) + offset)
+            offsets.append(self.header_size + (segment << 4) + offset)
         return offsets
 

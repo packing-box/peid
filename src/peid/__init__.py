@@ -11,7 +11,7 @@ def find_ep_only_signature(*files, minlength=16, maxlength=64, common_bytes_thre
     """ Find a signature among the given files.
     
     :param files:                  list of files to be compared in order to deduce a signature
-    :param mainlength:             minimum signature length
+    :param minlength:              minimum signature length
     :param maxlength:              maximum signature length
     :param common_bytes_threshold: minimal portion of bytes common to each file to be considered a valid signature
     :return:                       signature string (PEiD format)
@@ -29,6 +29,8 @@ def find_ep_only_signature(*files, minlength=16, maxlength=64, common_bytes_thre
                 logger.debug(f"{f}: {e}")
             else:
                 raise
+    if len(data) == 0:
+        raise ValueError("Could not find a suitable signature")
     # now determine a signature
     length = maxlength
     while length >= minlength:

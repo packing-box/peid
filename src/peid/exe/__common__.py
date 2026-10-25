@@ -9,12 +9,21 @@ __all__ = ["EXE"]
 class EXE:
     def __init__(self, path_or_buffer, logger=None):
         self.logger = logger
-        self._fd = path_or_buffer if isinstance(path_or_buffer, _io.BufferedReader) else open(path_or_buffer, "rb")
+        self._owned = not isinstance(path_or_buffer, _io.BufferedReader)
+        self._fd = open(path_or_buffer, "rb") if self._owned else path_or_buffer
         self.path = self._fd.name
         self.size = getsize(self.path)
         if self._fd.read(2) != b"MZ":
-            raise OSError("Invalid MZ signature")
+            self._fail("Invalid MZ signature")
         self._fd.seek(0)
+
+    def _fail(self, message):
+        """ Close the file descriptor if it was opened here (so that a failed format does not leak it) and raise. """
+        if self._owned:
+            self._fd.close()
+        else:
+            self._fd.seek(0)
+        raise OSError(message)
     
     def __enter__(self):
         return self
@@ -36,7 +45,7 @@ class EXE:
     
     def read(self, n=64, *offsets):
         if len(offsets) == 0:
-            offsets = range(0, self.size-n)
+            offsets = range(0, self.size)
         for o in offsets:
             self._fd.seek(o)
             r = self._fd.read(min(n, self.size-o))

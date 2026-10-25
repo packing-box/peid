@@ -21,7 +21,7 @@ class PE(EXE):
         # go to PE header and check PE signature
         self._fd.seek(self.pe_offset)
         if self._fd.read(4) != b"PE\x00\x00":
-            raise OSError("Invalid PE signature")
+            self._fail("Invalid PE signature")
         # read NumberOfSections 
         self._fd.seek(self.pe_offset + 6)
         self.number_of_sections = int.from_bytes(self._fd.read(2), "little")

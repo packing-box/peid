@@ -63,7 +63,7 @@ def peid():
                      help="path to the custom database of signatures (default: None ; use the embedded DB)")
     grp = opt.add_mutually_exclusive_group()
     grp.add_argument("-e", "--ep-only", action="store_false",
-                     help="only consider signatures from entry point (default: True)")
+                     help="disable entry point-only matching, scanning the whole file instead (default: False)")
     opt.add_argument("-m", "--match-once", action="store_true", help="match only one signature")
     grp.add_argument("-s", "--section-start-only", dest="sec_start_only", action="store_true",
                      help="consider only signatures from section starts (default: False)")
@@ -77,10 +77,10 @@ def peid():
     # execute the tool
     if args.benchmark:
         t1 = perf_counter()
-    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only, sec_start_only=args.sec_start_only,
-                              match_all=not args.match_once, logger=args.logger)
+    results = identify_packer(*args.path, db=args.db, ep_only=args.ep_only and not args.sec_start_only,
+                              sec_start_only=args.sec_start_only, match_all=not args.match_once, logger=args.logger)
     for pe, r in results:
-        r = r or []
+        r = [r] if isinstance(r, str) else r or []
         if not args.author:
             r = list(map(lambda x: re.sub(r"\s*\-(\-?\>|\s*by)\s*(.*)$", "", x), r))
         if not args.version:
@@ -167,7 +167,7 @@ def peidsig():
             n += " -> " + args.author
         if args.db:
             db = SignaturesDB(args.db, logger=args.logger)
-            db.set(args.packer, s, True, args.author, args.version)
+            db.set(args.packer, s.split(), ep_only=True, author=args.author, version=args.version)
             db.dump()
         s = "[%s]\nsignature = %s\nep_only = true" % (n, s)
     print(s)
