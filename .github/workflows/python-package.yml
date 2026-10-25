@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
@@ -52,29 +52,31 @@ jobs:
     needs: build
     steps:
     - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-    - name: Check for version change
-      uses: dorny/paths-filter@v4
-      id: filter
-      with:
-        filters: |
-          version:
-            - '**/VERSION.txt'
-    - if: steps.filter.outputs.version == 'true'
+    - name: Check whether the version is already on PyPI
+      # comparing with PyPI (not with the previous commit) also releases a version whose push did not trigger a deploy
+      id: version
+      run: |
+        version=$(tr -d '[:space:]' < src/peid/VERSION.txt)
+        status=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 "https://pypi.org/pypi/peid/$version/json")
+        case "$status" in
+          200) echo "Version $version is already on PyPI" ; echo "new=false" >> "$GITHUB_OUTPUT" ;;
+          404) echo "Version $version is not on PyPI yet" ; echo "new=true" >> "$GITHUB_OUTPUT" ;;
+          *)   echo "::error::Unexpected HTTP status $status from PyPI" ; exit 1 ;;
+        esac
+    - if: steps.version.outputs.new == 'true'
       name: Cleanup README
       run: |
         sed -ri 's/^(##*)\s*:.*:\s*/\1 /g' README.md
         awk '{if (match($0,"## Supporters")) exit; print}' README.md > README
         mv -f README README.md
-    - if: steps.filter.outputs.version == 'true'
+    - if: steps.version.outputs.new == 'true'
       name: Set up Python
       uses: actions/setup-python@v6
       with:
         python-version: "3.13"
-    - if: steps.filter.outputs.version == 'true'
+    - if: steps.version.outputs.new == 'true'
       name: Build peid package
       run: python3 -m pip install --upgrade build && python3 -m build
-    - if: steps.filter.outputs.version == 'true'
+    - if: steps.version.outputs.new == 'true'
       name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1

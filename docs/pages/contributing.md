@@ -11,6 +11,18 @@ include:
 - the exact command and its output, ideally with `-v`;
 - if possible, a link to (or the hash of) the sample.
 
+## Security
+
+Please do **not** report vulnerabilities in public issues. See the
+[security policy](https://github.com/packing-box/peid/blob/main/SECURITY.md):
+report them privately through the repository's *Security* tab
+(*Report a vulnerability*).
+
+Dependencies are monitored by Dependabot and audited with
+[pip-audit](https://github.com/pypa/pip-audit) by the `security` workflow
+(`.github/workflows/security.yml`), on every push and pull request to `main`
+and weekly.
+
 ## Adding signatures
 
 1. Gather several samples packed with the same packer and version. The
@@ -44,12 +56,13 @@ $ flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 ```
 
 CI (`.github/workflows/python-package.yml`) installs the package on Python
-3.9 to 3.13 and runs this flake8 check.
+3.10 to 3.13 and runs this flake8 check.
 
 ## Releasing
 
-The version is stored in `src/peid/VERSION.txt`. When a push to `main`
-changes that file, CI builds the package and publishes it to PyPI.
+The version is stored in `src/peid/VERSION.txt`. On every push to `main`,
+CI checks whether that version is already on PyPI. If not, it builds the
+package and publishes it.
 
 ## Building this documentation
 
