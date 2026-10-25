@@ -1,0 +1,64 @@
+site_author: dhondta
+site_name: Packed Executable iDentifier
+site_description: Detect packers on PE files using signatures
+site_url: https://peid.readthedocs.io
+repo_url: https://github.com/packing-box/peid
+edit_uri: edit/main/docs/pages/
+copyright: Copyright &copy; 2021 Alexandre D'Hondt
+docs_dir: pages
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Command-line tools:
+      - peid: cli/peid.md
+      - peid-db: cli/peid-db.md
+      - peid-sig: cli/peid-sig.md
+  - Signatures database: signatures.md
+  - Python API: api.md
+  - How it works: internals.md
+  - Contributing: contributing.md
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:alexandre.dhondt@gmail.com
+      name: Contact Alex
+    - icon: fontawesome/brands/github
+      link: https://github.com/dhondta
+      name: Alex on GitHub
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/alexandre-d-2ab2aa14/
+      name: Alex on LinkedIn
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/alex_dhondt
+      name: Alex on Twitter
+theme:
+  name: material
+  logo: img/logo.png
+  favicon: img/icon.png
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+use_directory_urls: false
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
