@@ -4,6 +4,7 @@
 
 [![PyPi](https://img.shields.io/pypi/v/peid.svg)](https://pypi.python.org/pypi/peid/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/peid.svg)](https://pypi.python.org/pypi/peid/)
+[![Read The Docs](https://readthedocs.org/projects/peid/badge/?version=latest)](https://peid.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://github.com/packing-box/peid/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/peid/actions/workflows/python-package.yml)
 [![Security](https://github.com/packing-box/peid/actions/workflows/security.yml/badge.svg)](https://github.com/packing-box/peid/actions/workflows/security.yml)
 [![DOI](https://zenodo.org/badge/383567798.svg)](https://zenodo.org/badge/latestdoi/383567798)
@@ -59,11 +60,5 @@ You may also like these:
 - [PyPackerDetect](https://github.com/packing-box/pypackerdetect): Packing detection tool for PE files (fork of [this repository](https://github.com/cylance/PyPackerDetect)).
 - [REMINDer](https://github.com/packing-box/reminder): Packing detector using a simple heuristic (inspired from [this paper](https://ieeexplore.ieee.org/document/5404211)).
 
-
-## :clap:  Supporters
-
-[![Stargazers repo roster for @packing-box/peid](https://reporoster.com/stars/dark/packing-box/peid)](https://github.com/packing-box/peid/stargazers)
-
-[![Forkers repo roster for @packing-box/peid](https://reporoster.com/forks/dark/packing-box/peid)](https://github.com/packing-box/peid/network/members)
 
 <p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
