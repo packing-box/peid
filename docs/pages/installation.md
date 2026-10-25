@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python **3.8 or later**. CI runs on 3.9 to 3.13.
+- Python **3.10 or later**. CI runs on 3.10 to 3.13.
 - [`msgspec`](https://pypi.org/project/msgspec/), which pip installs automatically.
 
 ## From PyPI
