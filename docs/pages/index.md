@@ -10,6 +10,7 @@ matching byte signatures.
 [![PyPi](https://img.shields.io/pypi/v/peid.svg)](https://pypi.python.org/pypi/peid/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/peid.svg)](https://pypi.python.org/pypi/peid/)
 [![Build Status](https://github.com/packing-box/peid/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/peid/actions/workflows/python-package.yml)
+[![Security](https://github.com/packing-box/peid/actions/workflows/security.yml/badge.svg)](https://github.com/packing-box/peid/actions/workflows/security.yml)
 [![DOI](https://zenodo.org/badge/383567798.svg)](https://zenodo.org/badge/latestdoi/383567798)
 [![License](https://img.shields.io/pypi/l/peid.svg)](https://pypi.python.org/pypi/peid/)
 
